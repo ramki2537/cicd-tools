@@ -1,15 +1,16 @@
-
 #!/bin/bash
+ARCH=amd64
+PLATFORM=$(uname -s)_$ARCH
 
-#resize disk from 20GB to 50GB
-sudo growpart /dev/nvme0n1 4
+# Step 2: Grow partition 4 (ensure disk was resized in AWS)
+sudo growpart /dev/nvme0n1 4 
 
-sudo lvextend -L +10G /dev/RootVG/rootVol
-sudo lvextend -L +10G /dev/mapper/RootVG-varVol
-sudo lvextend -l +100%FREE /dev/mapper/RootVG-varTmpVol
+# Step 3: Extend LVs (50% each)
+sudo lvextend -l +50%FREE /dev/RootVG/rootVol
+sudo lvextend -l +50%FREE /dev/RootVG/varVol
 
+# Step 4: Grow XFS filesystems
 sudo xfs_growfs /
-sudo xfs_growfs /var/tmp
 sudo xfs_growfs /var
 
 

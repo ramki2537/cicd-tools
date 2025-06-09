@@ -5,8 +5,7 @@ module "jenkins" {
   name = "jenkins"
 
   instance_type          = "t3.small"
-  vpc_security_group_ids = ["sg-05c095d5508d4f172"] #replace your SG
-  subnet_id = "subnet-0993dfb6210749924" #replace your Subnet
+  vpc_security_group_ids = [aws_security_group.allow_tls_new.id] #replace your SG
   ami = data.aws_ami.ami_info.id
   user_data = file("jenkins.sh")
   tags = {
@@ -29,8 +28,7 @@ module "jenkins_agent" {
   name = "jenkins-agent"
 
   instance_type          = "t3.small"
-  vpc_security_group_ids = ["sg-05c095d5508d4f172"] #replace your SG
-  subnet_id = "subnet-0993dfb6210749924" #replace your Subnet
+  vpc_security_group_ids = [aws_security_group.allow_tls_new.id] #replace your SG
   ami = data.aws_ami.ami_info.id
   user_data = file("jenkins-agent.sh")
   tags = {
@@ -72,5 +70,37 @@ module "records" {
       allow_overwrite = true
     }
   ]
+
+}
+
+resource "aws_security_group" "allow_tls_new" {
+  name        = "allow_tls_new"
+  description = "Allow TLS inbound traffic and all outbound traffic"
+
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "allow_tls"
+  }
 
 }
